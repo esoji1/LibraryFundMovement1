@@ -223,50 +223,5 @@ namespace _Project.GameFeatures.UI.Librarians
                 Debug.LogError($"Ошибка при удалении записи: {ex.Message}");
             }
         }
-
-        public void UpdateCurrentRecord()
-        {
-            if (_isNewRecordMode || _currentIndex < 0 || _currentIndex >= _librariansData.Rows.Count)
-                return;
-
-            try
-            {
-                int id = Convert.ToInt32(_librariansData.Rows[_currentIndex]["id_библиотекаря"]);
-                string lastName = _librariansPopup.LastNameInput.text;
-                string firstName = _librariansPopup.FirstNameInput.text;
-                string surname = _librariansPopup.SurnameInput.text;
-                string login = _librariansPopup.LoginInput.text;
-                string password = _librariansPopup.PasswordInput.text;
-                string accessLevel = _librariansPopup.AccessInput.options[_librariansPopup.AccessInput.value].text;
-
-                string query = @"UPDATE Библиотекари 
-                                SET фамилия = @lastName, 
-                                    имя = @firstName, 
-                                    отчество = @surname, 
-                                    логин = @login, 
-                                    пароль = @password, 
-                                    уровень_доступа = @accessLevel 
-                                WHERE id_библиотекара = @id";
-
-                IDbDataParameter[] parameters = {
-                    new SqliteParameter("@lastName", lastName),
-                    new SqliteParameter("@firstName", firstName),
-                    new SqliteParameter("@surname", string.IsNullOrEmpty(surname) ? DBNull.Value : (object)surname),
-                    new SqliteParameter("@login", login),
-                    new SqliteParameter("@password", password),
-                    new SqliteParameter("@accessLevel", accessLevel),
-                    new SqliteParameter("@id", id)
-                };
-
-                _databaseController.ExecuteQuery(query, parameters);
-                
-                Debug.Log("Запись обновлена!");
-                LoadLibrariansData(); 
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Ошибка при обновлении записи: {ex.Message}");
-            }
-        }
     }
 }
