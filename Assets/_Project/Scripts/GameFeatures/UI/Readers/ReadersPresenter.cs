@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Globalization;
+using _Project.Core.Services;
 using _Project.GameFeatures.Database;
 using Mono.Data.Sqlite;
 using UnityEngine;
@@ -12,15 +13,17 @@ namespace _Project.GameFeatures.UI.Readers
     {
         private readonly ReadersPopup _readersPopup;
         private readonly DatabaseController _databaseController;
+        private NotificationService _notificationService;
 
         private DataTable _readersData;
         private int _currentIndex = -1;
         private bool _isNewRecordMode = false;
 
-        public ReadersPresenter(ReadersPopup readersPopup, DatabaseController databaseController)
+        public ReadersPresenter(ReadersPopup readersPopup, DatabaseController databaseController, NotificationService notificationService)
         {
             _readersPopup = readersPopup;
             _databaseController = databaseController;
+            _notificationService = notificationService;
         }
 
         public void Initialize()
@@ -117,6 +120,7 @@ namespace _Project.GameFeatures.UI.Readers
             }
             else
             {
+                _notificationService.Notify("Это первая запись");
                 Debug.Log("Это первая запись");
             }
         }

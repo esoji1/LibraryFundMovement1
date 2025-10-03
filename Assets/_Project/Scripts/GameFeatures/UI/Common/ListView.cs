@@ -10,7 +10,7 @@ namespace _Project.GameFeatures.UI.Common
         
         private readonly List<T> _items = new();
         private readonly Queue<T> _freeList = new();
-
+        
         public T SpawnElement()
         {
             if (this._freeList.TryDequeue(out var item))
