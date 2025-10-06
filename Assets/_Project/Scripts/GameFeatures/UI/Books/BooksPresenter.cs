@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using _Project.Core.Services;
 using _Project.GameFeatures.Database;
-using _Project.Scripts.GameFeatures.UI.Books;
 using Mono.Data.Sqlite;
 using UnityEngine;
 using Zenject;
@@ -302,14 +301,12 @@ namespace _Project.GameFeatures.UI.Books
             try
             {
                 string query = $"SELECT название_жанра FROM Жанры WHERE id_жанра = '{genreId}'";
-                Debug.Log($"Executing query: {query}");
 
                 using (var reader = _databaseController.ReadData(query))
                 {
                     if (reader.Read())
                     {
                         string genreName = reader["название_жанра"].ToString();
-                        Debug.Log($"Found genre name: {genreName}");
                         return genreName;
                     }
                 }

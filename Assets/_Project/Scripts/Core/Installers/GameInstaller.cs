@@ -1,10 +1,10 @@
 using _Project.GameFeatures.Database;
+using _Project.GameFeatures.UI.BookReceipts;
 using _Project.GameFeatures.UI.Books;
 using _Project.GameFeatures.UI.Genres;
 using _Project.GameFeatures.UI.Librarians;
 using _Project.GameFeatures.UI.Notifications;
 using _Project.GameFeatures.UI.Readers;
-using _Project.Scripts.GameFeatures.UI.Books;
 using UnityEngine;
 using Zenject;
 
@@ -19,6 +19,7 @@ namespace _Project.Core.Installers
         [SerializeField] private NotificationPopup _notificationPopup;
         [SerializeField] private NotificationList _notificationList;
         [SerializeField] private BooksPopup _booksPopup;
+        [SerializeField] private BookReceiptsPopup _bookReceiptsPopup;
 
         public override void InstallBindings()
         {
@@ -62,6 +63,15 @@ namespace _Project.Core.Installers
             
             Container
                 .BindInterfacesTo<BooksPresenter>()
+                .AsSingle();
+            
+            Container
+                .Bind<BookReceiptsPopup>()
+                .FromInstance(_bookReceiptsPopup)
+                .AsSingle();
+            
+            Container
+                .BindInterfacesTo<BookReceiptsPresenter>()
                 .AsSingle();
         }
 

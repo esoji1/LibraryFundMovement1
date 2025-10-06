@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace _Project.Scripts.GameFeatures.UI.Books
+namespace _Project.GameFeatures.UI.Books
 {
     public class BooksPopup : MonoBehaviour
     {
