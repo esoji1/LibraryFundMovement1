@@ -62,7 +62,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 2
-  m_Spacing: 40
+  m_Spacing: 42
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
@@ -357,6 +357,12 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6419904554483347092}
     m_Modifications:
+    - target: {fileID: 633531317597571791, guid: 62d57157bddc10c4fb00f998f71c6ddf, type: 3}
+      propertyPath: m_text
+      value: 'XXXX-XX-XX
+
+'
+      objectReference: {fileID: 0}
     - target: {fileID: 2099002490440227763, guid: 62d57157bddc10c4fb00f998f71c6ddf, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -470,6 +476,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6419904554483347092}
     m_Modifications:
+    - target: {fileID: 633531317597571791, guid: 62d57157bddc10c4fb00f998f71c6ddf, type: 3}
+      propertyPath: m_text
+      value: +X (XXX) XXX-XX-XX
+      objectReference: {fileID: 0}
+    - target: {fileID: 633531317597571791, guid: 62d57157bddc10c4fb00f998f71c6ddf, type: 3}
+      propertyPath: m_fontSize
+      value: 28.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 633531317597571791, guid: 62d57157bddc10c4fb00f998f71c6ddf, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2099002490440227763, guid: 62d57157bddc10c4fb00f998f71c6ddf, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

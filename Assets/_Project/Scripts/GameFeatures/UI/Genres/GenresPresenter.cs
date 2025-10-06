@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using _Project.Core.Services;
 using _Project.GameFeatures.Database;
 using Mono.Data.Sqlite;
 using UnityEngine;
@@ -11,15 +12,17 @@ namespace _Project.GameFeatures.UI.Genres
     {
         private readonly GenresPopup _genresPopup;
         private readonly DatabaseController _databaseController;
+        private readonly NotificationService _notificationService;
 
         private DataTable _genresData;
         private int _currentIndex = -1;
         private bool _isNewRecordMode = false;
 
-        public GenresPresenter(GenresPopup genresPopup, DatabaseController databaseController)
+        public GenresPresenter(GenresPopup genresPopup, DatabaseController databaseController, NotificationService notificationService)
         {
             _genresPopup = genresPopup;
             _databaseController = databaseController;
+            _notificationService = notificationService;
         }
 
         public void Initialize()
@@ -51,11 +54,11 @@ namespace _Project.GameFeatures.UI.Genres
                     _genresData.Load(reader);
                 }
 
-                Debug.Log($"Загружено записей жанров: {_genresData.Rows.Count}");
+                _notificationService.Notify($"Загружено записей жанров: {_genresData.Rows.Count}");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при загрузке данных: {ex.Message}");
+                _notificationService.Notify($"Ошибка при загрузке данных: {ex.Message}");
                 _genresData = new DataTable();
             }
         }
@@ -88,7 +91,7 @@ namespace _Project.GameFeatures.UI.Genres
             _genresPopup.ClearField();
             _currentIndex = -1;
             _isNewRecordMode = true;
-            Debug.Log("Режим добавления новой записи");
+            _notificationService.Notify("Режим добавления новой записи");
         }
 
         private void OnPreviousClick()
@@ -109,7 +112,7 @@ namespace _Project.GameFeatures.UI.Genres
             }
             else
             {
-                Debug.Log("Это первая запись");
+                _notificationService.Notify("Это первая запись");
             }
         }
 
@@ -136,7 +139,7 @@ namespace _Project.GameFeatures.UI.Genres
 
             if (string.IsNullOrEmpty(genreText))
             {
-                Debug.LogWarning("Не все обязательные поля заполнены!");
+                _notificationService.Notify("Не все обязательные поля заполнены!");
                 return;
             }
 
@@ -150,7 +153,7 @@ namespace _Project.GameFeatures.UI.Genres
 
                 _databaseController.ExecuteQuery(query, parameters);
 
-                Debug.Log("Жанр успешно добавлен в базу данных!");
+                _notificationService.Notify("Жанр успешно добавлен в базу данных!");
 
                 LoadGenresData();
                 _currentIndex = _genresData.Rows.Count - 1;
@@ -159,7 +162,7 @@ namespace _Project.GameFeatures.UI.Genres
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при добавлении жанра: {ex.Message}");
+                _notificationService.Notify($"Ошибка при добавлении жанра: {ex.Message}");
             }
         }
 
@@ -180,7 +183,7 @@ namespace _Project.GameFeatures.UI.Genres
 
                 _databaseController.ExecuteQuery(query, parameters);
 
-                Debug.Log("Запись удалена!");
+                _notificationService.Notify("Запись удалена!");
 
                 LoadGenresData();
 
@@ -196,7 +199,7 @@ namespace _Project.GameFeatures.UI.Genres
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при удалении записи: {ex.Message}");
+                _notificationService.Notify($"Ошибка при удалении записи: {ex.Message}");
             }
         }
     }

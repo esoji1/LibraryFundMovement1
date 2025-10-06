@@ -3,6 +3,7 @@ using _Project.GameFeatures.Database;
 using Zenject;
 using Mono.Data.Sqlite;
 using System.Data;
+using _Project.Core.Services;
 using UnityEngine;
 
 namespace _Project.GameFeatures.UI.Librarians
@@ -11,15 +12,17 @@ namespace _Project.GameFeatures.UI.Librarians
     {
         private readonly LibrariansPopup _librariansPopup;
         private readonly DatabaseController _databaseController;
+        private readonly NotificationService _notificationService;
 
         private DataTable _librariansData;
         private int _currentIndex = -1;
         private bool _isNewRecordMode = false;
 
-        public LibrariansPresenter(LibrariansPopup librariansPopup, DatabaseController databaseController)
+        public LibrariansPresenter(LibrariansPopup librariansPopup, DatabaseController databaseController, NotificationService notificationService)
         {
             _librariansPopup = librariansPopup;
             _databaseController = databaseController;
+            _notificationService = notificationService;
         }
 
         public void Initialize()
@@ -51,11 +54,11 @@ namespace _Project.GameFeatures.UI.Librarians
                     _librariansData.Load(reader);
                 }
 
-                Debug.Log($"Загружено записей библиотекарей: {_librariansData.Rows.Count}");
+                _notificationService.Notify($"Загружено записей библиотекарей: {_librariansData.Rows.Count}");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при загрузке данных: {ex.Message}");
+                _notificationService.Notify($"Ошибка при загрузке данных: {ex.Message}");
                 _librariansData = new DataTable();
             }
         }
@@ -100,7 +103,7 @@ namespace _Project.GameFeatures.UI.Librarians
             _librariansPopup.ClearFields();
             _currentIndex = -1;
             _isNewRecordMode = true;
-            Debug.Log("Режим добавления новой записи");
+            _notificationService.Notify("Режим добавления новой записи");
         }
 
         private void OnPreviousClick()
@@ -121,7 +124,7 @@ namespace _Project.GameFeatures.UI.Librarians
             }
             else
             {
-                Debug.Log("Это первая запись");
+                _notificationService.Notify("Это первая запись");
             }
         }
 
@@ -154,7 +157,7 @@ namespace _Project.GameFeatures.UI.Librarians
             if (string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(firstName) || 
                 string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
             {
-                Debug.LogWarning("Не все обязательные поля заполнены!");
+                _notificationService.Notify("Не все обязательные поля заполнены!");
                 return;
             }
 
@@ -175,7 +178,7 @@ namespace _Project.GameFeatures.UI.Librarians
 
                 _databaseController.ExecuteQuery(query, parameters);
                 
-                Debug.Log("Библиотекарь успешно добавлен в базу данных!");
+                _notificationService.Notify("Библиотекарь успешно добавлен в базу данных!");
                 
                 LoadLibrariansData();
                 _currentIndex = _librariansData.Rows.Count - 1;
@@ -184,7 +187,7 @@ namespace _Project.GameFeatures.UI.Librarians
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при добавлении библиотекаря: {ex.Message}");
+                _notificationService.Notify($"Ошибка при добавлении библиотекаря: {ex.Message}");
             }
         }
 
@@ -204,7 +207,7 @@ namespace _Project.GameFeatures.UI.Librarians
 
                 _databaseController.ExecuteQuery(query, parameters);
                 
-                Debug.Log("Запись удалена!");
+                _notificationService.Notify("Запись удалена!");
                 
                 LoadLibrariansData();
                 
@@ -220,7 +223,7 @@ namespace _Project.GameFeatures.UI.Librarians
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при удалении записи: {ex.Message}");
+                _notificationService.Notify($"Ошибка при удалении записи: {ex.Message}");
             }
         }
     }

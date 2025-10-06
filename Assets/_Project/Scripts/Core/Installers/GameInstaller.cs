@@ -1,8 +1,10 @@
 using _Project.GameFeatures.Database;
+using _Project.GameFeatures.UI.Books;
 using _Project.GameFeatures.UI.Genres;
 using _Project.GameFeatures.UI.Librarians;
 using _Project.GameFeatures.UI.Notifications;
 using _Project.GameFeatures.UI.Readers;
+using _Project.Scripts.GameFeatures.UI.Books;
 using UnityEngine;
 using Zenject;
 
@@ -16,9 +18,12 @@ namespace _Project.Core.Installers
         [SerializeField] private ReadersPopup _readersPopup;
         [SerializeField] private NotificationPopup _notificationPopup;
         [SerializeField] private NotificationList _notificationList;
+        [SerializeField] private BooksPopup _booksPopup;
 
         public override void InstallBindings()
         {
+            BindNotification();
+            
             Container
                 .BindInterfacesAndSelfTo<DatabaseController>()
                 .AsSingle();
@@ -50,6 +55,18 @@ namespace _Project.Core.Installers
                 .BindInterfacesTo<ReadersPresenter>()
                 .AsSingle();
 
+            Container
+                .Bind<BooksPopup>()
+                .FromInstance(_booksPopup)
+                .AsSingle();
+            
+            Container
+                .BindInterfacesTo<BooksPresenter>()
+                .AsSingle();
+        }
+
+        private void BindNotification()
+        {
             Container
                 .Bind<NotificationPopup>()
                 .FromInstance(_notificationPopup)

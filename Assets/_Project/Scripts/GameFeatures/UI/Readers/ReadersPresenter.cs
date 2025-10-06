@@ -13,7 +13,7 @@ namespace _Project.GameFeatures.UI.Readers
     {
         private readonly ReadersPopup _readersPopup;
         private readonly DatabaseController _databaseController;
-        private NotificationService _notificationService;
+        private readonly NotificationService _notificationService;
 
         private DataTable _readersData;
         private int _currentIndex = -1;
@@ -55,11 +55,11 @@ namespace _Project.GameFeatures.UI.Readers
                     _readersData.Load(reader);
                 }
 
-                Debug.Log($"Загружено записей читателей: {_readersData.Rows.Count}");
+                _notificationService.Notify($"Загружено записей читателей: {_readersData.Rows.Count}");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при загрузке данных: {ex.Message}");
+                _notificationService.Notify($"Ошибка при загрузке данных: {ex.Message}");
                 _readersData = new DataTable();
             }
         }
@@ -99,7 +99,7 @@ namespace _Project.GameFeatures.UI.Readers
             _readersPopup.ClearFields();
             _currentIndex = -1;
             _isNewRecordMode = true;
-            Debug.Log("Режим добавления новой записи");
+            _notificationService.Notify("Режим добавления новой записи");
         }
 
         private void OnPreviousClick()
@@ -121,7 +121,6 @@ namespace _Project.GameFeatures.UI.Readers
             else
             {
                 _notificationService.Notify("Это первая запись");
-                Debug.Log("Это первая запись");
             }
         }
 
@@ -156,13 +155,13 @@ namespace _Project.GameFeatures.UI.Readers
                 string.IsNullOrEmpty(passportDetails) || string.IsNullOrEmpty(telephone) ||
                 string.IsNullOrEmpty(email) || string.IsNullOrEmpty(dateRegistration))
             {
-                Debug.LogWarning("Не все обязательные поля заполнены!");
+                _notificationService.Notify("Не все обязательные поля заполнены!");
                 return;
             }
 
             if (TextIsDate(dateRegistration) == false)
             {
-                Debug.LogWarning("Некоректная дата");
+                _notificationService.Notify("Некоректная дата");
                 return;
             }
 
@@ -185,7 +184,7 @@ namespace _Project.GameFeatures.UI.Readers
 
                 _databaseController.ExecuteQuery(query, parameters);
 
-                Debug.Log("Читатель успешно добавлен в базу данных!");
+                _notificationService.Notify("Читатель успешно добавлен в базу данных!");
 
                 LoadReadersData();
                 _currentIndex = _readersData.Rows.Count - 1;
@@ -194,7 +193,7 @@ namespace _Project.GameFeatures.UI.Readers
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при добавлении читателя: {ex.Message}");
+                _notificationService.Notify($"Ошибка при добавлении читателя: {ex.Message}");
             }
         }
 
@@ -215,7 +214,7 @@ namespace _Project.GameFeatures.UI.Readers
 
                 _databaseController.ExecuteQuery(query, parameters);
 
-                Debug.Log("Запись удалена!");
+                _notificationService.Notify("Запись удалена!");
 
                 LoadReadersData();
 
@@ -231,7 +230,7 @@ namespace _Project.GameFeatures.UI.Readers
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Ошибка при удалении записи: {ex.Message}");
+                _notificationService.Notify($"Ошибка при удалении записи: {ex.Message}");
             }
         }
 

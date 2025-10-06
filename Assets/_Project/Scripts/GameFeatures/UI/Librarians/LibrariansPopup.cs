@@ -7,42 +7,42 @@ namespace _Project.GameFeatures.UI.Librarians
 {
     public class LibrariansPopup : MonoBehaviour
     {
-        [field: SerializeField] public TMP_InputField LastNameInput { get; private set; }
-        [field: SerializeField] public TMP_InputField FirstNameInput { get; private set; }
-        [field: SerializeField] public TMP_InputField SurnameInput { get; private set; }
-        [field: SerializeField] public TMP_InputField LoginInput { get; private set; }
-        [field: SerializeField] public TMP_InputField PasswordInput { get; private set; }
-        [field: SerializeField] public TMP_Dropdown AccessInput { get; private set; }
-        
-        [SerializeField] private Button _previousButton;
-        [SerializeField] private Button _nextButton;
-        [SerializeField] private Button _deleteButton;
+            [field: SerializeField] public TMP_InputField LastNameInput { get; private set; }
+            [field: SerializeField] public TMP_InputField FirstNameInput { get; private set; }
+            [field: SerializeField] public TMP_InputField SurnameInput { get; private set; }
+            [field: SerializeField] public TMP_InputField LoginInput { get; private set; }
+            [field: SerializeField] public TMP_InputField PasswordInput { get; private set; }
+            [field: SerializeField] public TMP_Dropdown AccessInput { get; private set; }
+            
+            [SerializeField] private Button _previousButton;
+            [SerializeField] private Button _nextButton;
+            [SerializeField] private Button _deleteButton;
 
-        public event UnityAction OnPreviousClick
-        {
-            add => _previousButton.onClick.AddListener(value);
-            remove => _previousButton.onClick.RemoveListener(value);
-        }
+            public event UnityAction OnPreviousClick
+            {
+                add => _previousButton.onClick.AddListener(value);
+                remove => _previousButton.onClick.RemoveListener(value);
+            }
 
-        public event UnityAction OnNextClick
-        {
-            add => _nextButton.onClick.AddListener(value);
-            remove => _nextButton.onClick.RemoveListener(value);
-        }
+            public event UnityAction OnNextClick
+            {
+                add => _nextButton.onClick.AddListener(value);
+                remove => _nextButton.onClick.RemoveListener(value);
+            }
 
-        public event UnityAction OnDeleteClick
-        {
-            add => _deleteButton.onClick.AddListener(value);
-            remove => _deleteButton.onClick.RemoveListener(value);
-        }
+            public event UnityAction OnDeleteClick
+            {
+                add => _deleteButton.onClick.AddListener(value);
+                remove => _deleteButton.onClick.RemoveListener(value);
+            }
 
-        public void ClearFields()
-        {
-            LastNameInput.text = "";
-            FirstNameInput.text = "";
-            SurnameInput.text = "";
-            LoginInput.text = "";
-            PasswordInput.text = "";
-        }
+            public void ClearFields()
+            {
+                LastNameInput.text = "";
+                FirstNameInput.text = "";
+                SurnameInput.text = "";
+                LoginInput.text = "";
+                PasswordInput.text = "";
+            }
     }
 }

@@ -12,7 +12,7 @@ namespace _Project.GameFeatures.UI.Notifications
         private readonly ObjectPoolNotification _objectPoolNotification;
 
         private Coroutine _coroutine;
-        private float _timeBetween = 3f;
+        private float _timeBetween = 5f;
 
         public NotificationPresenter(NotificationPopup notificationPopup, ObjectPoolNotification objectPoolNotification,
             MonoBehaviour monoBehaviour)
