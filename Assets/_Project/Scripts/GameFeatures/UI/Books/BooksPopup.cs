@@ -1,3 +1,4 @@
+using _Project.GameFeatures.UI.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -5,7 +6,7 @@ using UnityEngine.UI;
 
 namespace _Project.GameFeatures.UI.Books
 {
-    public class BooksPopup : MonoBehaviour
+    public class BooksPopup : MonoBehaviour, IPopup
     {
         [field: SerializeField] public TMP_InputField ISBNInput { get; private set; }
         [field: SerializeField] public TMP_InputField NameInput { get; private set; }
@@ -45,6 +46,9 @@ namespace _Project.GameFeatures.UI.Books
             add => _saveButton.onClick.AddListener(value);
             remove => _saveButton.onClick.RemoveListener(value);
         }
+
+        public void Show() => gameObject.SetActive(true);
+        public void Hide() => gameObject.SetActive(false);
 
         public void ClearFields()
         {

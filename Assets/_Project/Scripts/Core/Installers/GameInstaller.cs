@@ -3,6 +3,7 @@ using _Project.GameFeatures.UI.BookLending;
 using _Project.GameFeatures.UI.BookReceipts;
 using _Project.GameFeatures.UI.Books;
 using _Project.GameFeatures.UI.Genres;
+using _Project.GameFeatures.UI.HomeForm;
 using _Project.GameFeatures.UI.Librarians;
 using _Project.GameFeatures.UI.Notifications;
 using _Project.GameFeatures.UI.Readers;
@@ -22,6 +23,7 @@ namespace _Project.Core.Installers
         [SerializeField] private BooksPopup _booksPopup;
         [SerializeField] private BookReceiptsPopup _bookReceiptsPopup;
         [SerializeField] private BookLendingPopup _bookLendingPopup;
+        [SerializeField] private HomeFormView homeFormView;
 
         public override void InstallBindings()
         {
@@ -37,7 +39,7 @@ namespace _Project.Core.Installers
                 .AsSingle();
 
             Container
-                .BindInterfacesTo<LibrariansPresenter>()
+                .BindInterfacesAndSelfTo<LibrariansPresenter>()
                 .AsSingle();
 
             Container
@@ -46,7 +48,7 @@ namespace _Project.Core.Installers
                 .AsSingle();
 
             Container
-                .BindInterfacesTo<GenresPresenter>()
+                .BindInterfacesAndSelfTo<GenresPresenter>()
                 .AsSingle();
 
             Container
@@ -55,7 +57,7 @@ namespace _Project.Core.Installers
                 .AsSingle();
 
             Container
-                .BindInterfacesTo<ReadersPresenter>()
+                .BindInterfacesAndSelfTo<ReadersPresenter>()
                 .AsSingle();
 
             Container
@@ -64,7 +66,7 @@ namespace _Project.Core.Installers
                 .AsSingle();
             
             Container
-                .BindInterfacesTo<BooksPresenter>()
+                .BindInterfacesAndSelfTo<BooksPresenter>()
                 .AsSingle();
             
             Container
@@ -73,7 +75,7 @@ namespace _Project.Core.Installers
                 .AsSingle();
             
             Container
-                .BindInterfacesTo<BookReceiptsPresenter>()
+                .BindInterfacesAndSelfTo<BookReceiptsPresenter>()
                 .AsSingle();
             
             Container
@@ -82,7 +84,16 @@ namespace _Project.Core.Installers
                 .AsSingle();
             
             Container
-                .BindInterfacesTo<BookLendingPresenter>()
+                .BindInterfacesAndSelfTo<BookLendingPresenter>()
+                .AsSingle();
+            
+            Container
+                .Bind<HomeFormView>()
+                .FromInstance(homeFormView)
+                .AsSingle();
+            
+            Container
+                .BindInterfacesAndSelfTo<HomeFormPresenter>()
                 .AsSingle();
         }
 

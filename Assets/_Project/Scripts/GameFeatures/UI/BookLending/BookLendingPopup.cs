@@ -1,3 +1,4 @@
+using _Project.GameFeatures.UI.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -5,7 +6,7 @@ using UnityEngine.UI;
 
 namespace _Project.GameFeatures.UI.BookLending
 {
-    public class BookLendingPopup : MonoBehaviour
+    public class BookLendingPopup : MonoBehaviour, IPopup
     {
         [field: SerializeField] public TMP_Dropdown BookInput { get; private set; }
         [field: SerializeField] public TMP_Dropdown ReaderInput { get; private set; }
@@ -44,6 +45,9 @@ namespace _Project.GameFeatures.UI.BookLending
             remove => _saveButton.onClick.RemoveListener(value);
         }
 
+        public void Show() => gameObject.SetActive(true);
+        public void Hide() => gameObject.SetActive(false);
+        
         public void ClearFields()
         {
             DataIssueInput.text = "";

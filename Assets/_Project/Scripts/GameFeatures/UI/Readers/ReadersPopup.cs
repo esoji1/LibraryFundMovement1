@@ -1,3 +1,4 @@
+using _Project.GameFeatures.UI.Common;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -5,7 +6,7 @@ using UnityEngine.UI;
 
 namespace _Project.GameFeatures.UI.Readers
 {
-    public class ReadersPopup : MonoBehaviour
+    public class ReadersPopup : MonoBehaviour, IPopup
     {
         [field: SerializeField] public TMP_InputField LastNameInput { get; private set; }
         [field: SerializeField] public TMP_InputField FirstNameInput { get; private set; }
@@ -43,6 +44,9 @@ namespace _Project.GameFeatures.UI.Readers
             add => _saveButton.onClick.AddListener(value);
             remove => _saveButton.onClick.RemoveListener(value);
         }
+
+        public void Show() => gameObject.SetActive(true);
+        public void Hide() => gameObject.SetActive(false);
         
         public void ClearFields()
         {
