@@ -19,7 +19,8 @@ namespace _Project.GameFeatures.UI.Readers
         private int _currentIndex = -1;
         private bool _isNewRecordMode = false;
 
-        public ReadersPresenter(ReadersPopup readersPopup, DatabaseController databaseController, NotificationService notificationService)
+        public ReadersPresenter(ReadersPopup readersPopup, DatabaseController databaseController,
+            NotificationService notificationService)
         {
             _readersPopup = readersPopup;
             _databaseController = databaseController;
@@ -31,6 +32,7 @@ namespace _Project.GameFeatures.UI.Readers
             _readersPopup.OnPreviousClick += OnPreviousClick;
             _readersPopup.OnNextClick += OnNextClick;
             _readersPopup.OnDeleteClick += OnDeleteClick;
+            _readersPopup.OnSaveClick += OnSaveClick;
 
             LoadReadersData();
             ShowFirstRecord();
@@ -41,6 +43,7 @@ namespace _Project.GameFeatures.UI.Readers
             _readersPopup.OnPreviousClick -= OnPreviousClick;
             _readersPopup.OnNextClick -= OnNextClick;
             _readersPopup.OnDeleteClick -= OnDeleteClick;
+            _readersPopup.OnSaveClick -= OnSaveClick;
         }
 
         private void LoadReadersData()
@@ -54,8 +57,6 @@ namespace _Project.GameFeatures.UI.Readers
                 {
                     _readersData.Load(reader);
                 }
-
-                _notificationService.Notify($"Загружено записей читателей: {_readersData.Rows.Count}");
             }
             catch (Exception ex)
             {
@@ -237,11 +238,85 @@ namespace _Project.GameFeatures.UI.Readers
         private bool TextIsDate(string text)
         {
             string dateFormat = "yyyy-MM-dd";
-            
+
             if (DateTime.TryParseExact(text, dateFormat, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out _))
                 return true;
-            
+
             return false;
+        }
+
+        private void OnSaveClick()
+        {
+            SaveReader();
+        }
+
+        private void SaveReader()
+        {
+            string lastName = _readersPopup.LastNameInput.text;
+            string firstName = _readersPopup.FirstNameInput.text;
+            string surname = _readersPopup.SurnameInput.text;
+            string passportDetails = _readersPopup.PassportDetailsInput.text;
+            string telephone = _readersPopup.TelephoneInput.text;
+            string email = _readersPopup.EmailInput.text;
+            string dateRegistration = _readersPopup.DateRegistrationInput.text;
+
+            if (string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(firstName) ||
+                string.IsNullOrEmpty(passportDetails) || string.IsNullOrEmpty(telephone) ||
+                string.IsNullOrEmpty(email) || string.IsNullOrEmpty(dateRegistration))
+            {
+                _notificationService.Notify("Не все обязательные поля заполнены!");
+                return;
+            }
+
+            if (TextIsDate(dateRegistration) == false)
+            {
+                _notificationService.Notify("Некоректная дата");
+                return;
+            }
+
+            try
+            {
+                int id = Convert.ToInt32(_readersData.Rows[_currentIndex]["id_читателя"]);
+                string updateQuery = @"UPDATE Читатели 
+                                        SET фамилия = @lastName, 
+                                            имя = @firstName, 
+                                            отчество = @surname, 
+                                            паспортные_данные = @passportDetails, 
+                                            телефон = @telephone, 
+                                            email = @email,
+                                            дата_регистрации = @dateRegistration 
+                                        WHERE id_читателя = @id";
+
+                IDbDataParameter[] updateParameters =
+                {
+                    new SqliteParameter("@lastName", lastName),
+                    new SqliteParameter("@firstName", firstName),
+                    new SqliteParameter("@surname", string.IsNullOrEmpty(surname) ? DBNull.Value : (object)surname),
+                    new SqliteParameter("@passportDetails", passportDetails),
+                    new SqliteParameter("@telephone", telephone),
+                    new SqliteParameter("@email", email),
+                    new SqliteParameter("@dateRegistration", dateRegistration),
+                    new SqliteParameter("@id", id)
+                };
+
+                _databaseController.ExecuteQuery(updateQuery, updateParameters);
+                _notificationService.Notify("Запись читателя успешно обновлена!");
+                
+                LoadReadersData();
+
+                if (_isNewRecordMode)
+                {
+                    _currentIndex = _readersData.Rows.Count - 1;
+                    _isNewRecordMode = false;
+                }
+
+                DisplayCurrentRecord();
+            }
+            catch (Exception ex)
+            {
+                string operation = _isNewRecordMode ? "добавлении" : "обновлении";
+                _notificationService.Notify($"Ошибка при {operation} читателя: {ex.Message}");
+            }
         }
     }
 }

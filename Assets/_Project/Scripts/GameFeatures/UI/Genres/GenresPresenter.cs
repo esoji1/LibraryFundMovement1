@@ -18,7 +18,8 @@ namespace _Project.GameFeatures.UI.Genres
         private int _currentIndex = -1;
         private bool _isNewRecordMode = false;
 
-        public GenresPresenter(GenresPopup genresPopup, DatabaseController databaseController, NotificationService notificationService)
+        public GenresPresenter(GenresPopup genresPopup, DatabaseController databaseController,
+            NotificationService notificationService)
         {
             _genresPopup = genresPopup;
             _databaseController = databaseController;
@@ -30,6 +31,7 @@ namespace _Project.GameFeatures.UI.Genres
             _genresPopup.OnPreviousClick += OnPreviousClick;
             _genresPopup.OnNextClick += OnNextClick;
             _genresPopup.OnDeleteClick += OnDeleteClick;
+            _genresPopup.OnSaveClick += OnSaveClick;
 
             LoadGenresData();
             ShowFirstRecord();
@@ -40,6 +42,7 @@ namespace _Project.GameFeatures.UI.Genres
             _genresPopup.OnPreviousClick -= OnPreviousClick;
             _genresPopup.OnNextClick -= OnNextClick;
             _genresPopup.OnDeleteClick -= OnDeleteClick;
+            _genresPopup.OnSaveClick -= OnSaveClick;
         }
 
         private void LoadGenresData()
@@ -53,8 +56,6 @@ namespace _Project.GameFeatures.UI.Genres
                 {
                     _genresData.Load(reader);
                 }
-
-                _notificationService.Notify($"Загружено записей жанров: {_genresData.Rows.Count}");
             }
             catch (Exception ex)
             {
@@ -200,6 +201,45 @@ namespace _Project.GameFeatures.UI.Genres
             catch (Exception ex)
             {
                 _notificationService.Notify($"Ошибка при удалении записи: {ex.Message}");
+            }
+        }
+
+        private void OnSaveClick()
+        {
+            string genreText = _genresPopup.GenreInput.text;
+
+            if (string.IsNullOrEmpty(genreText))
+            {
+                _notificationService.Notify("Не все обязательные поля заполнены!");
+                return;
+            }
+
+            try
+            {
+                int id = Convert.ToInt32(_genresData.Rows[_currentIndex]["id_жанра"]);
+                string updateQuery = @"UPDATE Жанры SET название_жанра = @genreText WHERE id_жанра = @id";
+                IDbDataParameter[] updateParameters =
+                {
+                    new SqliteParameter("@genreText", genreText),
+                    new SqliteParameter("@id", id)
+                };
+                _databaseController.ExecuteQuery(updateQuery, updateParameters);
+                _notificationService.Notify("Запись успешно обновлена!");
+
+                LoadGenresData();
+
+                if (_isNewRecordMode)
+                {
+                    _currentIndex = _genresData.Rows.Count - 1;
+                    _isNewRecordMode = false;
+                }
+
+                DisplayCurrentRecord();
+            }
+            catch (Exception ex)
+            {
+                string operation = _isNewRecordMode ? "добавлении" : "обновлении";
+                _notificationService.Notify($"Ошибка при {operation} жанра: {ex.Message}");
             }
         }
     }

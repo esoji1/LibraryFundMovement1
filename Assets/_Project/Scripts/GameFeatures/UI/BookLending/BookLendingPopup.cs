@@ -3,11 +3,17 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace _Project.GameFeatures.UI.Genres
+namespace _Project.GameFeatures.UI.BookLending
 {
-    public class GenresPopup : MonoBehaviour
+    public class BookLendingPopup : MonoBehaviour
     {
-        [field: SerializeField] public TMP_InputField GenreInput { get; private set; }
+        [field: SerializeField] public TMP_Dropdown BookInput { get; private set; }
+        [field: SerializeField] public TMP_Dropdown ReaderInput { get; private set; }
+        [field: SerializeField] public TMP_Dropdown LibrarianInput { get; private set; }
+        [field: SerializeField] public TMP_InputField DataIssueInput { get; private set; }
+        [field: SerializeField] public TMP_InputField ReturnPeriodInput { get; private set; }
+        [field: SerializeField] public TMP_InputField ReturnDateInput { get; private set; }
+        [field: SerializeField] public TMP_InputField StatusInput { get; private set; }
         
         [SerializeField] private Button _previousButton;
         [SerializeField] private Button _nextButton;
@@ -37,7 +43,13 @@ namespace _Project.GameFeatures.UI.Genres
             add => _saveButton.onClick.AddListener(value);
             remove => _saveButton.onClick.RemoveListener(value);
         }
-        
-        public void ClearField() => GenreInput.text = "";
+
+        public void ClearFields()
+        {
+            DataIssueInput.text = "";
+            ReturnPeriodInput.text = "";
+            ReturnDateInput.text = "";
+            StatusInput.text = "";
+        }
     }
 }

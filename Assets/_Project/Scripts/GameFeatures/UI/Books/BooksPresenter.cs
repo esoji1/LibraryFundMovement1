@@ -32,6 +32,7 @@ namespace _Project.GameFeatures.UI.Books
             _booksPopup.OnPreviousClick += OnPreviousClick;
             _booksPopup.OnNextClick += OnNextClick;
             _booksPopup.OnDeleteClick += OnDeleteClick;
+            _booksPopup.OnSaveClick += OnSaveClick;
 
             LoadGenresIntoDropdown();
             LoadBooksData();
@@ -43,6 +44,7 @@ namespace _Project.GameFeatures.UI.Books
             _booksPopup.OnPreviousClick -= OnPreviousClick;
             _booksPopup.OnNextClick -= OnNextClick;
             _booksPopup.OnDeleteClick -= OnDeleteClick;
+            _booksPopup.OnSaveClick -= OnSaveClick;
         }
 
         private void LoadBooksData()
@@ -56,8 +58,6 @@ namespace _Project.GameFeatures.UI.Books
                 {
                     _booksData.Load(reader);
                 }
-
-                _notificationService.Notify($"Загружено записей книг: {_booksData.Rows.Count}");
             }
             catch (Exception ex)
             {
@@ -229,7 +229,7 @@ namespace _Project.GameFeatures.UI.Books
                 _notificationService.Notify($"Ошибка при добавлении книги: {ex.Message}");
             }
         }
-        
+
         private string GetGenreIdByName(string genreName)
         {
             if (string.IsNullOrEmpty(genreName))
@@ -339,11 +339,92 @@ namespace _Project.GameFeatures.UI.Books
                 }
 
                 _booksPopup.GenreList.AddOptions(genreNames);
-                _notificationService.Notify($"Загружено жанров: {genreNames.Count}");
             }
             catch (Exception ex)
             {
                 _notificationService.Notify($"Ошибка при загрузке жанров: {ex.Message}");
+            }
+        }
+
+        private void OnSaveClick()
+        {
+            SaveBook();
+        }
+
+        private void SaveBook()
+        {
+            string isbn = _booksPopup.ISBNInput.text;
+            string name = _booksPopup.NameInput.text;
+            string author = _booksPopup.AuthorInput.text;
+            string publishingHouse = _booksPopup.PublishingHouseInput.text;
+            string yearPublication = _booksPopup.YearPublicationInput.text;
+            string genreName = _booksPopup.GenreList.options[_booksPopup.GenreList.value].text;
+            string numberCopies = _booksPopup.NumberCopiesInput.text;
+            string copiesAvailable = _booksPopup.CopiesAvailableInput.text;
+            string storageLocation = _booksPopup.StorageLocationInput.text;
+
+            if (string.IsNullOrEmpty(isbn) || string.IsNullOrEmpty(name) ||
+                string.IsNullOrEmpty(author) || string.IsNullOrEmpty(publishingHouse) ||
+                string.IsNullOrEmpty(yearPublication) || string.IsNullOrEmpty(numberCopies) ||
+                string.IsNullOrEmpty(copiesAvailable) || string.IsNullOrEmpty(storageLocation))
+            {
+                _notificationService.Notify("Не все обязательные поля заполнены!");
+                return;
+            }
+
+            try
+            {
+                string genreId = GetGenreIdByName(genreName);
+                if (string.IsNullOrEmpty(genreId))
+                {
+                    _notificationService.Notify("Ошибка: не удалось найти ID жанра!");
+                    return;
+                }
+
+                int id = Convert.ToInt32(_booksData.Rows[_currentIndex]["id_книги"]);
+                string updateQuery = @"UPDATE Книги 
+                                    SET isbn = @isbn,
+                                        название = @name,
+                                        автор = @author,
+                                        издательство = @publishingHouse,
+                                        год_издания = @yearPublication,
+                                        id_жанра = @genreId,
+                                        количество_экземпляров = @numberCopies,
+                                        доступно_экземпляров = @copiesAvailable,
+                                        место_хранения = @storageLocation
+                                    WHERE id_книги = @id";
+
+                IDbDataParameter[] updateParameters =
+                {
+                    new SqliteParameter("@isbn", isbn),
+                    new SqliteParameter("@name", name),
+                    new SqliteParameter("@author", author),
+                    new SqliteParameter("@publishingHouse", publishingHouse),
+                    new SqliteParameter("@yearPublication", yearPublication),
+                    new SqliteParameter("@genreId", genreId),
+                    new SqliteParameter("@numberCopies", numberCopies),
+                    new SqliteParameter("@copiesAvailable", copiesAvailable),
+                    new SqliteParameter("@storageLocation", storageLocation),
+                    new SqliteParameter("@id", id)
+                };
+
+                _databaseController.ExecuteQuery(updateQuery, updateParameters);
+                _notificationService.Notify("Запись книги успешно обновлена!");
+
+                LoadBooksData();
+
+                if (_isNewRecordMode)
+                {
+                    _currentIndex = _booksData.Rows.Count - 1;
+                    _isNewRecordMode = false;
+                }
+
+                DisplayCurrentRecord();
+            }
+            catch (Exception ex)
+            {
+                string operation = _isNewRecordMode ? "добавлении" : "обновлении";
+                _notificationService.Notify($"Ошибка при {operation} книги: {ex.Message}");
             }
         }
     }

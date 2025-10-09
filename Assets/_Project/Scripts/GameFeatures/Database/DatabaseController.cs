@@ -11,13 +11,9 @@ namespace _Project.GameFeatures.Database
     public class DatabaseController : IInitializable
     {
         private const string DatabaseName = "LibraryFundMovement.db";
-
-        private readonly NotificationService _notificationService;
         
         private string _databasePath;
         private IDbConnection _dbConnection;
-
-        public DatabaseController(NotificationService notificationService) => _notificationService = notificationService;
 
         public void Initialize() => ConnectToDatabase();
         
@@ -25,23 +21,12 @@ namespace _Project.GameFeatures.Database
         {
             _databasePath = Path.Combine(Application.persistentDataPath, DatabaseName);
 
-            if (File.Exists(_databasePath) == false)
-            {
-                _notificationService.Notify($"Database file not found at: {_databasePath}");
-                _notificationService.Notify("Creating new database file...");
-            }
-            else
-            {
-                _notificationService.Notify($"Found existing database at: {_databasePath}");
-            }
-
             string connectionString = $"URI=file:{_databasePath}";
 
             try
             {
                 _dbConnection = new SqliteConnection(connectionString);
                 _dbConnection.Open();
-                _notificationService.Notify("Successfully connected to database!");
             }
             catch (Exception exception)
             {

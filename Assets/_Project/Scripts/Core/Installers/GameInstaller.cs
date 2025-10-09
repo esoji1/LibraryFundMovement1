@@ -1,4 +1,5 @@
 using _Project.GameFeatures.Database;
+using _Project.GameFeatures.UI.BookLending;
 using _Project.GameFeatures.UI.BookReceipts;
 using _Project.GameFeatures.UI.Books;
 using _Project.GameFeatures.UI.Genres;
@@ -20,6 +21,7 @@ namespace _Project.Core.Installers
         [SerializeField] private NotificationList _notificationList;
         [SerializeField] private BooksPopup _booksPopup;
         [SerializeField] private BookReceiptsPopup _bookReceiptsPopup;
+        [SerializeField] private BookLendingPopup _bookLendingPopup;
 
         public override void InstallBindings()
         {
@@ -72,6 +74,15 @@ namespace _Project.Core.Installers
             
             Container
                 .BindInterfacesTo<BookReceiptsPresenter>()
+                .AsSingle();
+            
+            Container
+                .Bind<BookLendingPopup>()
+                .FromInstance(_bookLendingPopup)
+                .AsSingle();
+            
+            Container
+                .BindInterfacesTo<BookLendingPresenter>()
                 .AsSingle();
         }
 

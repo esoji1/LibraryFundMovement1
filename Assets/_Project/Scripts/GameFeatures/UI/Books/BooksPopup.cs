@@ -20,6 +20,7 @@ namespace _Project.GameFeatures.UI.Books
         [SerializeField] private Button _previousButton;
         [SerializeField] private Button _nextButton;
         [SerializeField] private Button _deleteButton;
+        [SerializeField] private Button _saveButton;
 
         public event UnityAction OnPreviousClick
         {
@@ -37,6 +38,12 @@ namespace _Project.GameFeatures.UI.Books
         {
             add => _deleteButton.onClick.AddListener(value);
             remove => _deleteButton.onClick.RemoveListener(value);
+        }
+        
+        public event UnityAction OnSaveClick
+        {
+            add => _saveButton.onClick.AddListener(value);
+            remove => _saveButton.onClick.RemoveListener(value);
         }
 
         public void ClearFields()

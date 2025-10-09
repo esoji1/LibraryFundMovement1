@@ -32,6 +32,7 @@ namespace _Project.GameFeatures.UI.BookReceipts
             _bookReceiptsPopup.OnPreviousClick += OnPreviousClick;
             _bookReceiptsPopup.OnNextClick += OnNextClick;
             _bookReceiptsPopup.OnDeleteClick += OnDeleteClick;
+            _bookReceiptsPopup.OnSaveClick += OnSaveClick;
 
             LoadBooksIntoDropdown();
             LoadLibrariansIntoDropdown();
@@ -44,6 +45,7 @@ namespace _Project.GameFeatures.UI.BookReceipts
             _bookReceiptsPopup.OnPreviousClick -= OnPreviousClick;
             _bookReceiptsPopup.OnNextClick -= OnNextClick;
             _bookReceiptsPopup.OnDeleteClick -= OnDeleteClick;
+            _bookReceiptsPopup.OnSaveClick -= OnSaveClick;
         }
 
         private void LoadBookReceiptsData()
@@ -62,8 +64,6 @@ namespace _Project.GameFeatures.UI.BookReceipts
                 {
                     _bookReceiptsData.Load(reader);
                 }
-
-                _notificationService.Notify($"Загружено записей поступлений: {_bookReceiptsData.Rows.Count}");
             }
             catch (Exception ex)
             {
@@ -98,7 +98,6 @@ namespace _Project.GameFeatures.UI.BookReceipts
                 _bookReceiptsPopup.QuantityInput.text = row["количество"].ToString();
                 _bookReceiptsPopup.PricePerUnitInput.text = row["цена_за_единицу"].ToString();
 
-                // Устанавливаем книгу в dropdown
                 string bookName = row["название_книги"].ToString();
                 if (!string.IsNullOrEmpty(bookName))
                 {
@@ -118,11 +117,11 @@ namespace _Project.GameFeatures.UI.BookReceipts
                     _bookReceiptsPopup.BookInput.value = 0;
                 }
 
-                // Устанавливаем библиотекаря в dropdown
                 string librarianName = row["фио_библиотекаря"].ToString();
                 if (!string.IsNullOrEmpty(librarianName))
                 {
-                    int librarianIndex = _bookReceiptsPopup.LibrarianInput.options.FindIndex(option => option.text == librarianName);
+                    int librarianIndex =
+                        _bookReceiptsPopup.LibrarianInput.options.FindIndex(option => option.text == librarianName);
                     if (librarianIndex >= 0)
                     {
                         _bookReceiptsPopup.LibrarianInput.value = librarianIndex;
@@ -195,7 +194,8 @@ namespace _Project.GameFeatures.UI.BookReceipts
             string quantity = _bookReceiptsPopup.QuantityInput.text;
             string pricePerUnit = _bookReceiptsPopup.PricePerUnitInput.text;
             string bookName = _bookReceiptsPopup.BookInput.options[_bookReceiptsPopup.BookInput.value].text;
-            string librarianName = _bookReceiptsPopup.LibrarianInput.options[_bookReceiptsPopup.LibrarianInput.value].text;
+            string librarianName =
+                _bookReceiptsPopup.LibrarianInput.options[_bookReceiptsPopup.LibrarianInput.value].text;
 
             if (string.IsNullOrEmpty(invoiceNumber) || string.IsNullOrEmpty(dateReceipt) ||
                 string.IsNullOrEmpty(supplier) || string.IsNullOrEmpty(quantity) ||
@@ -207,13 +207,18 @@ namespace _Project.GameFeatures.UI.BookReceipts
 
             if (TextIsDate(dateReceipt) == false)
             {
-                _notificationService.Notify("Некоректная дата");
+                _notificationService.Notify("Некорректная дата");
                 return;
             }
-            
+
+            if (!int.TryParse(quantity, out int qty) || qty <= 0)
+            {
+                _notificationService.Notify("Количество должно быть положительным целым числом");
+                return;
+            }
+
             try
             {
-                // Получаем ID книги по названию
                 string bookId = GetBookIdByName(bookName);
                 if (string.IsNullOrEmpty(bookId))
                 {
@@ -221,7 +226,6 @@ namespace _Project.GameFeatures.UI.BookReceipts
                     return;
                 }
 
-                // Получаем ID библиотекаря по ФИО (разбираем ФИО на составляющие)
                 string librarianId = GetLibrarianIdByFullName(librarianName);
                 if (string.IsNullOrEmpty(librarianId))
                 {
@@ -238,7 +242,7 @@ namespace _Project.GameFeatures.UI.BookReceipts
                     new SqliteParameter("@invoiceNumber", invoiceNumber),
                     new SqliteParameter("@dateReceipt", dateReceipt),
                     new SqliteParameter("@supplier", supplier),
-                    new SqliteParameter("@quantity", quantity),
+                    new SqliteParameter("@quantity", qty),
                     new SqliteParameter("@pricePerUnit", pricePerUnit),
                     new SqliteParameter("@bookId", bookId),
                     new SqliteParameter("@librarianId", librarianId)
@@ -248,8 +252,7 @@ namespace _Project.GameFeatures.UI.BookReceipts
 
                 _notificationService.Notify("Поступление книги успешно добавлено в базу данных!");
 
-                // Обновляем количество доступных экземпляров книги
-                UpdateBookCopiesCount(bookId, quantity);
+                UpdateBookCopiesCount(bookId, qty);
 
                 LoadBookReceiptsData();
                 _currentIndex = _bookReceiptsData.Rows.Count - 1;
@@ -262,25 +265,29 @@ namespace _Project.GameFeatures.UI.BookReceipts
             }
         }
 
-        private void UpdateBookCopiesCount(string bookId, string quantity)
+        /// <summary>
+        /// Добавляет qty к количеству_экземпляров и к доступно_экземпляров для книги.
+        /// qty должен быть > 0.
+        /// </summary>
+        private void UpdateBookCopiesCount(string bookId, int qty)
         {
             try
             {
-                if (int.TryParse(quantity, out int qty))
-                {
-                    string updateQuery = @"UPDATE Книги 
+                if (qty <= 0)
+                    return;
+
+                string updateQuery = @"UPDATE Книги 
                                          SET количество_экземпляров = количество_экземпляров + @qty,
                                              доступно_экземпляров = доступно_экземпляров + @qty
                                          WHERE id_книги = @bookId";
 
-                    IDbDataParameter[] parameters =
-                    {
-                        new SqliteParameter("@qty", qty),
-                        new SqliteParameter("@bookId", bookId)
-                    };
+                IDbDataParameter[] parameters =
+                {
+                    new SqliteParameter("@qty", qty),
+                    new SqliteParameter("@bookId", bookId)
+                };
 
-                    _databaseController.ExecuteQuery(updateQuery, parameters);
-                }
+                _databaseController.ExecuteQuery(updateQuery, parameters);
             }
             catch (Exception ex)
             {
@@ -321,7 +328,6 @@ namespace _Project.GameFeatures.UI.BookReceipts
 
             try
             {
-                // Разбираем ФИО на составляющие
                 string[] nameParts = fullName.Split(' ');
                 string lastName = nameParts.Length > 0 ? nameParts[0] : "";
                 string firstName = nameParts.Length > 1 ? nameParts[1] : "";
@@ -329,9 +335,10 @@ namespace _Project.GameFeatures.UI.BookReceipts
 
                 string safeLastName = lastName.Replace("'", "''");
                 string safeFirstName = firstName.Replace("'", "''");
-                
-                string query = $"SELECT id_библиотекаря FROM Библиотекари WHERE фамилия = '{safeLastName}' AND имя = '{safeFirstName}'";
-                
+
+                string query =
+                    $"SELECT id_библиотекаря FROM Библиотекари WHERE фамилия = '{safeLastName}' AND имя = '{safeFirstName}'";
+
                 if (!string.IsNullOrEmpty(middleName))
                 {
                     string safeMiddleName = middleName.Replace("'", "''");
@@ -374,7 +381,6 @@ namespace _Project.GameFeatures.UI.BookReceipts
 
                 _databaseController.ExecuteQuery(query, parameters);
 
-                // Уменьшаем количество экземпляров книги при удалении поступления
                 DecreaseBookCopiesCount(bookId, quantity);
 
                 _notificationService.Notify("Запись поступления удалена!");
@@ -401,7 +407,7 @@ namespace _Project.GameFeatures.UI.BookReceipts
         {
             try
             {
-                if (int.TryParse(quantity, out int qty))
+                if (int.TryParse(quantity, out int qty) && qty > 0)
                 {
                     string updateQuery = @"UPDATE Книги 
                                          SET количество_экземпляров = количество_экземпляров - @qty,
@@ -442,7 +448,6 @@ namespace _Project.GameFeatures.UI.BookReceipts
                 }
 
                 _bookReceiptsPopup.BookInput.AddOptions(bookNames);
-                _notificationService.Notify($"Загружено книг: {bookNames.Count}");
             }
             catch (Exception ex)
             {
@@ -466,34 +471,163 @@ namespace _Project.GameFeatures.UI.BookReceipts
                         string lastName = reader["фамилия"].ToString();
                         string firstName = reader["имя"].ToString();
                         string middleName = reader["отчество"].ToString();
-                        
+
                         string fullName = $"{lastName} {firstName}";
                         if (!string.IsNullOrEmpty(middleName))
                         {
                             fullName += $" {middleName}";
                         }
-                        
+
                         librarianNames.Add(fullName);
                     }
                 }
 
                 _bookReceiptsPopup.LibrarianInput.AddOptions(librarianNames);
-                _notificationService.Notify($"Загружено библиотекарей: {librarianNames.Count}");
             }
             catch (Exception ex)
             {
                 _notificationService.Notify($"Ошибка при загрузке библиотекарей: {ex.Message}");
             }
         }
-        
+
         private bool TextIsDate(string text)
         {
             string dateFormat = "yyyy-MM-dd";
-            
+
             if (DateTime.TryParseExact(text, dateFormat, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out _))
                 return true;
-            
+
             return false;
+        }
+
+        private void OnSaveClick()
+        {
+            SaveBookReceipt();
+        }
+
+        private void SaveBookReceipt()
+        {
+            string invoiceNumber = _bookReceiptsPopup.InvoiceNumberInput.text;
+            string dateReceipt = _bookReceiptsPopup.DateReceiptInput.text;
+            string supplier = _bookReceiptsPopup.SupplierInput.text;
+            string quantity = _bookReceiptsPopup.QuantityInput.text;
+            string pricePerUnit = _bookReceiptsPopup.PricePerUnitInput.text;
+            string bookName = _bookReceiptsPopup.BookInput.options[_bookReceiptsPopup.BookInput.value].text;
+            string librarianName =
+                _bookReceiptsPopup.LibrarianInput.options[_bookReceiptsPopup.LibrarianInput.value].text;
+
+            if (string.IsNullOrEmpty(invoiceNumber) || string.IsNullOrEmpty(dateReceipt) ||
+                string.IsNullOrEmpty(supplier) || string.IsNullOrEmpty(quantity) ||
+                string.IsNullOrEmpty(pricePerUnit))
+            {
+                _notificationService.Notify("Не все обязательные поля заполнены!");
+                return;
+            }
+
+            if (TextIsDate(dateReceipt) == false)
+            {
+                _notificationService.Notify("Некорректная дата");
+                return;
+            }
+
+            if (!int.TryParse(quantity, out int qty) || qty <= 0)
+            {
+                _notificationService.Notify("Количество должно быть положительным целым числом");
+                return;
+            }
+
+            if (!decimal.TryParse(pricePerUnit, out decimal price) || price <= 0)
+            {
+                _notificationService.Notify("Цена за единицу должна быть положительным числом");
+                return;
+            }
+
+            try
+            {
+                string bookId = GetBookIdByName(bookName);
+                if (string.IsNullOrEmpty(bookId))
+                {
+                    _notificationService.Notify("Ошибка: не удалось найти ID книги!");
+                    return;
+                }
+
+                string librarianId = GetLibrarianIdByFullName(librarianName);
+                if (string.IsNullOrEmpty(librarianId))
+                {
+                    _notificationService.Notify("Ошибка: не удалось найти ID библиотекаря!");
+                    return;
+                }
+
+                int id = Convert.ToInt32(_bookReceiptsData.Rows[_currentIndex]["id_поступления"]);
+                string oldBookId = _bookReceiptsData.Rows[_currentIndex]["id_книги"].ToString();
+                int oldQuantity = Convert.ToInt32(_bookReceiptsData.Rows[_currentIndex]["количество"]);
+
+                string updateQuery = @"UPDATE Поступления_книг 
+                            SET номер_накладной = @invoiceNumber,
+                                дата_поступления = @dateReceipt,
+                                поставщик = @supplier,
+                                количество = @quantity,
+                                цена_за_единицу = @pricePerUnit,
+                                id_книги = @bookId,
+                                id_библиотекаря = @librarianId
+                            WHERE id_поступления = @id";
+
+                IDbDataParameter[] updateParameters =
+                {
+                    new SqliteParameter("@invoiceNumber", invoiceNumber),
+                    new SqliteParameter("@dateReceipt", dateReceipt),
+                    new SqliteParameter("@supplier", supplier),
+                    new SqliteParameter("@quantity", qty),
+                    new SqliteParameter("@pricePerUnit", price),
+                    new SqliteParameter("@bookId", bookId),
+                    new SqliteParameter("@librarianId", librarianId),
+                    new SqliteParameter("@id", id)
+                };
+
+                _databaseController.ExecuteQuery(updateQuery, updateParameters);
+                _notificationService.Notify("Запись поступления успешно обновлена!");
+
+                if (oldBookId != bookId || oldQuantity != qty)
+                {
+                    if (oldBookId != bookId)
+                    {
+                        DecreaseBookCopiesCount(oldBookId, oldQuantity.ToString());
+                    }
+                    else
+                    {
+                        int quantityDiff = qty - oldQuantity;
+                        if (quantityDiff > 0)
+                        {
+                            UpdateBookCopiesCount(bookId, quantityDiff);
+                        }
+                        else if (quantityDiff < 0)
+                        {
+                            DecreaseBookCopiesCount(bookId,
+                                Math.Abs(quantityDiff).ToString());
+                        }
+                    }
+
+                    if (oldBookId != bookId)
+                    {
+                        UpdateBookCopiesCount(bookId, qty);
+                    }
+                }
+
+                LoadBookReceiptsData();
+
+                if (_isNewRecordMode)
+                {
+                    _currentIndex = _bookReceiptsData.Rows.Count - 1;
+                    _isNewRecordMode = false;
+                }
+
+                DisplayCurrentRecord();
+            }
+            catch (Exception ex)
+            {
+                string operation = _isNewRecordMode ? "добавлении" : "обновлении";
+                _notificationService.Notify($"Ошибка при {operation} поступления: {ex.Message}");
+            }
         }
     }
 }
